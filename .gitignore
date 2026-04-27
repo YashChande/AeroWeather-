@@ -1,0 +1,19 @@
+# Visual Studio / .NET
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
+
+# SQLite
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# Node / Angular
+**/node_modules/
+**/.angular/
+**/dist/
+
+# OS Files
+.DS_Store
+Thumbs.db
