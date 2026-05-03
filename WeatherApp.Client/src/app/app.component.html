@@ -1,0 +1,55 @@
+<div class="app-container" [ngStyle]="backgroundStyle">
+  <div class="content-wrapper">
+    <h1 class="app-title">Aero<span class="highlight">Weather</span></h1>
+    
+    <div class="search-container">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Enter a city name..." 
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="searchWeather()"
+      >
+      <button class="search-btn" (click)="searchWeather()" [disabled]="loading">
+        <span *ngIf="!loading">Search</span>
+        <div class="loader" *ngIf="loading"></div>
+      </button>
+    </div>
+
+    <div class="error-message" *ngIf="error">
+      {{ error }}
+    </div>
+
+    <div class="weather-card" *ngIf="weatherData" [class.show]="weatherData">
+      <div class="weather-header">
+        <h2 class="location">{{ weatherData.location }}</h2>
+        <p class="date">{{ weatherData.lastUpdated | date:'medium' }}</p>
+      </div>
+
+      <div class="weather-main">
+        <div class="condition-icon">{{ getWeatherIcon(weatherData.condition) }}</div>
+        <div class="temperature">
+          {{ weatherData.temperature | number:'1.0-0' }}<span class="unit">°C</span>
+        </div>
+        <div class="condition-text">{{ weatherData.condition }}</div>
+      </div>
+
+      <div class="weather-details">
+        <div class="detail-item">
+          <span class="detail-icon">💧</span>
+          <div class="detail-info">
+            <span class="detail-label">Humidity</span>
+            <span class="detail-value">{{ weatherData.humidity }}%</span>
+          </div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon">💨</span>
+          <div class="detail-info">
+            <span class="detail-label">Wind</span>
+            <span class="detail-value">{{ weatherData.windSpeed }} km/h</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
