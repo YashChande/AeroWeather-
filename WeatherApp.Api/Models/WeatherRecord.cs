@@ -8,6 +8,7 @@ namespace WeatherApp.Api.Models
         public double Humidity { get; set; }
         public double WindSpeed { get; set; }
         public string Condition { get; set; } = string.Empty;
+        public bool IsDay { get; set; }
         public DateTime LastUpdated { get; set; }
     }
 }

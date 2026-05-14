@@ -32,7 +32,7 @@ namespace WeatherApp.Api.Services
             var resolvedName = firstResult.GetProperty("name").GetString() ?? location;
 
             // 2. Fetch Weather
-            var weatherUrl = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code";
+            var weatherUrl = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,is_day";
             var weatherResponse = await _httpClient.GetAsync(weatherUrl);
 
             if (!weatherResponse.IsSuccessStatusCode) return null;
@@ -45,6 +45,7 @@ namespace WeatherApp.Api.Services
             var humidity = current.GetProperty("relative_humidity_2m").GetDouble();
             var windSpeed = current.GetProperty("wind_speed_10m").GetDouble();
             var weatherCode = current.GetProperty("weather_code").GetInt32();
+            var isDay = current.GetProperty("is_day").GetInt32() == 1;
 
             var condition = GetConditionFromCode(weatherCode);
 
@@ -55,6 +56,7 @@ namespace WeatherApp.Api.Services
                 Humidity = humidity,
                 WindSpeed = windSpeed,
                 Condition = condition,
+                IsDay = isDay,
                 LastUpdated = DateTime.UtcNow
             };
         }
