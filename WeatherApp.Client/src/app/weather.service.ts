@@ -9,6 +9,7 @@ export interface WeatherRecord {
   humidity: number;
   windSpeed: number;
   condition: string;
+  isDay: boolean;
   lastUpdated: string;
 }
 

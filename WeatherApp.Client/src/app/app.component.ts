@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WeatherService, WeatherRecord } from './weather.service';
@@ -17,23 +17,9 @@ export class AppComponent {
   weatherData: WeatherRecord | null = null;
   loading: boolean = false;
   error: string | null = null;
-
-  mouseX = window.innerWidth / 2;
-  mouseY = window.innerHeight / 2;
+  weatherTheme: string = 'theme-default';
 
   constructor(private weatherService: WeatherService) {}
-
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(e: MouseEvent) {
-    this.mouseX = e.clientX;
-    this.mouseY = e.clientY;
-  }
-
-  get backgroundStyle() {
-    return {
-      background: `radial-gradient(circle at ${this.mouseX}px ${this.mouseY}px, rgba(255, 255, 255, 0.12) 0%, rgba(0, 0, 0, 0.8) 50%, #050505 100%)`
-    };
-  }
 
   searchWeather() {
     if (!this.searchQuery.trim()) return;
@@ -41,6 +27,7 @@ export class AppComponent {
     this.loading = true;
     this.error = null;
     this.weatherData = null;
+    this.weatherTheme = 'theme-default';
 
     this.weatherService.getWeather(this.searchQuery).pipe(
       catchError(err => {
@@ -52,15 +39,34 @@ export class AppComponent {
       if (data) {
         this.weatherData = data;
         this.error = null;
+        this.updateWeatherTheme(data);
       }
       this.loading = false;
     });
   }
 
-  getWeatherIcon(condition: string): string {
+  updateWeatherTheme(data: WeatherRecord) {
+    const cond = data.condition.toLowerCase();
+    
+    if (cond.includes('clear')) {
+      this.weatherTheme = data.isDay ? 'theme-sunny' : 'theme-clear-night';
+    } else if (cond.includes('cloud') || cond.includes('fog')) {
+      this.weatherTheme = data.isDay ? 'theme-cloudy-day' : 'theme-cloudy-night';
+    } else if (cond.includes('rain') || cond.includes('drizzle')) {
+      this.weatherTheme = 'theme-rainy';
+    } else if (cond.includes('snow')) {
+      this.weatherTheme = 'theme-snowy';
+    } else if (cond.includes('thunder')) {
+      this.weatherTheme = 'theme-stormy';
+    } else {
+      this.weatherTheme = 'theme-default';
+    }
+  }
+
+  getWeatherIcon(condition: string, isDay: boolean): string {
     const cond = condition.toLowerCase();
-    if (cond.includes('clear')) return '☀️';
-    if (cond.includes('cloud')) return '☁️';
+    if (cond.includes('clear')) return isDay ? '☀️' : '🌙';
+    if (cond.includes('cloud')) return isDay ? '⛅' : '☁️';
     if (cond.includes('rain') || cond.includes('drizzle')) return '🌧️';
     if (cond.includes('snow')) return '❄️';
     if (cond.includes('thunder')) return '⛈️';

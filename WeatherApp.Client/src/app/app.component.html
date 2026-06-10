@@ -1,4 +1,18 @@
-<div class="app-container" [ngStyle]="backgroundStyle">
+<div class="app-container" [ngClass]="weatherTheme">
+  
+  <!-- Weather Effects Layers -->
+  <div class="weather-effects">
+    <div class="rain-layer" *ngIf="weatherTheme === 'theme-rainy'">
+      <div class="drop" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></div>
+    </div>
+    <div class="snow-layer" *ngIf="weatherTheme === 'theme-snowy'">
+      <div class="flake" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></div>
+    </div>
+    <div class="lightning-layer" *ngIf="weatherTheme === 'theme-stormy'"></div>
+    <div class="sun-layer" *ngIf="weatherTheme === 'theme-sunny'"></div>
+    <div class="moon-layer" *ngIf="weatherTheme === 'theme-clear-night'"></div>
+  </div>
+
   <div class="content-wrapper">
     <h1 class="app-title">Aero<span class="highlight">Weather</span></h1>
     
@@ -27,7 +41,7 @@
       </div>
 
       <div class="weather-main">
-        <div class="condition-icon">{{ getWeatherIcon(weatherData.condition) }}</div>
+        <div class="condition-icon">{{ getWeatherIcon(weatherData.condition, weatherData.isDay) }}</div>
         <div class="temperature">
           {{ weatherData.temperature | number:'1.0-0' }}<span class="unit">°C</span>
         </div>
