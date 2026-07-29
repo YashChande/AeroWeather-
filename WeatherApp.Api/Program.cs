@@ -16,10 +16,13 @@ builder.Services.AddDbContext<WeatherDbContext>(options =>
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular",
-        policy => policy.WithOrigins("http://localhost:4200")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+    options.AddDefaultPolicy(
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200", "https://yashchande.github.io")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
 });
 
 // Register HttpClient and WeatherService
