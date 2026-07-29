@@ -17,7 +17,7 @@ export interface WeatherRecord {
   providedIn: 'root'
 })
 export class WeatherService {
-  private apiUrl = 'http://localhost:5147/api/weather'; // Changed to HTTP port to avoid certificate issues in browser
+  private apiUrl = 'https://aeroweather-aau4.onrender.com/api/weather'; // Point to live Render backend
 
   constructor(private http: HttpClient) { }
 
