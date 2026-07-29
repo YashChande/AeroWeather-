@@ -16,13 +16,12 @@ builder.Services.AddDbContext<WeatherDbContext>(options =>
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:4200", "https://yashchande.github.io")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 // Register HttpClient and WeatherService
@@ -34,7 +33,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 // app.UseHttpsRedirection();
 
-app.UseCors("AllowAngular");
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 

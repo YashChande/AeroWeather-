@@ -1,0 +1,25 @@
+<div class="graph-outer">
+  <!-- D3 SVG renders here -->
+  <div class="graph-canvas" #svgContainer></div>
+
+  <!-- Hover Weather Card -->
+  <div class="graph-card" *ngIf="hoveredCity">
+    <div class="graph-card-header">
+      <span class="graph-card-icon">{{ getWeatherIcon(hoveredCity.condition, hoveredCity.isDay) }}</span>
+      <div>
+        <div class="graph-card-city">{{ hoveredCity.location }}</div>
+        <div class="graph-card-condition">{{ hoveredCity.condition }}</div>
+      </div>
+    </div>
+    <div class="graph-card-temp">{{ hoveredCity.temperature | number:'1.0-0' }}°C</div>
+    <div class="graph-card-details">
+      <span>💧 {{ hoveredCity.humidity }}%</span>
+      <span>💨 {{ hoveredCity.windSpeed | number:'1.0-0' }} km/h</span>
+    </div>
+  </div>
+
+  <!-- Hint -->
+  <div class="graph-hint" *ngIf="!hoveredCity">
+    ✦ Hover a city node to see weather details
+  </div>
+</div>

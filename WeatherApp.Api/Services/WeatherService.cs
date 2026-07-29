@@ -10,6 +10,10 @@ namespace WeatherApp.Api.Services
         public WeatherService(HttpClient httpClient)
         {
             _httpClient = httpClient;
+            if (!_httpClient.DefaultRequestHeaders.Contains("User-Agent"))
+            {
+                _httpClient.DefaultRequestHeaders.Add("User-Agent", "AeroWeatherApp/1.0");
+            }
         }
 
         public async Task<WeatherRecord?> FetchWeatherAsync(string location)

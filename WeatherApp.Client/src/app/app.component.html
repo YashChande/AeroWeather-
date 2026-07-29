@@ -1,45 +1,114 @@
-<div class="app-container" [ngClass]="weatherTheme">
-  
+<div class="app-container" [ngClass]="[weatherTheme, isInitialState ? 'initial-state' : '']">
+
+  <!-- Particle Canvas Background -->
+  <canvas #canvasRef class="particle-canvas"></canvas>
+
   <!-- Weather Effects Layers -->
   <div class="weather-effects">
+    <!-- Rain -->
     <div class="rain-layer" *ngIf="weatherTheme === 'theme-rainy'">
       <div class="drop" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></div>
     </div>
+    <!-- Heavy Rain -->
+    <div class="rain-layer heavy" *ngIf="weatherTheme === 'theme-heavy-rain'">
+      <div class="drop" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]"></div>
+    </div>
+    <!-- Drizzle -->
+    <div class="drizzle-layer" *ngIf="weatherTheme === 'theme-drizzle'">
+      <div class="drizzle-drop" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]"></div>
+    </div>
+    <!-- Snow -->
     <div class="snow-layer" *ngIf="weatherTheme === 'theme-snowy'">
       <div class="flake" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></div>
     </div>
-    <div class="lightning-layer" *ngIf="weatherTheme === 'theme-stormy'"></div>
+    <!-- Blizzard / Heavy Snow -->
+    <div class="blizzard-layer" *ngIf="weatherTheme === 'theme-blizzard'">
+      <div class="bliz-flake" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40]"></div>
+      <div class="bliz-wind"></div>
+    </div>
+    <!-- Hail -->
+    <div class="hail-layer" *ngIf="weatherTheme === 'theme-hail'">
+      <div class="hailstone" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></div>
+    </div>
+    <!-- Thunderstorm -->
+    <div class="lightning-layer" *ngIf="weatherTheme === 'theme-stormy'">
+      <div class="drop" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></div>
+    </div>
+    <!-- Fog / Mist -->
+    <div class="fog-layer" *ngIf="weatherTheme === 'theme-foggy'">
+      <div class="fog-band" *ngFor="let i of [1,2,3,4,5]"></div>
+    </div>
+    <!-- Scorching Heat -->
+    <div class="scorching-layer" *ngIf="weatherTheme === 'theme-scorching'">
+      <div class="heat-wave" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+      <div class="sun-glow"></div>
+    </div>
+    <!-- Sunny / Clear Night existing -->
     <div class="sun-layer" *ngIf="weatherTheme === 'theme-sunny'"></div>
     <div class="moon-layer" *ngIf="weatherTheme === 'theme-clear-night'"></div>
   </div>
 
-  <div class="content-wrapper">
-    <h1 class="app-title">Aero<span class="highlight">Weather</span></h1>
-    
+  <div class="content-wrapper" [class.initial-content]="isInitialState">
+    <!-- Animated Title with Decorative Elements -->
+    <div class="title-container">
+      <div class="title-aura"></div>
+      <div class="title-sparkle sparkle-1">✨</div>
+      <div class="title-sparkle sparkle-2">🌤️</div>
+      <h1 class="app-title clickable" #titleRef (click)="resetToHome()" title="Click to return Home">
+        <span class="aero-text">Aero</span><span class="highlight">Weather</span>
+      </h1>
+    </div>
+
+    <!-- Search Container -->
     <div class="search-container">
-      <input 
-        type="text" 
-        class="search-input" 
-        placeholder="Enter a city name..." 
-        [(ngModel)]="searchQuery"
-        (keyup.enter)="searchWeather()"
-      >
+      <div class="search-wrapper">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Enter a city name..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onInputChange()"
+          (keyup.enter)="searchWeather()"
+          (blur)="hideSuggestions()"
+          autocomplete="off"
+        >
+        <!-- Autocomplete Dropdown -->
+        <ul class="suggestions-list" *ngIf="showSuggestions">
+          <li
+            class="suggestion-item"
+            *ngFor="let s of suggestions"
+            (mousedown)="selectSuggestion(s)"
+          >
+            <span class="suggestion-icon">📍</span>
+            {{ s }}
+          </li>
+        </ul>
+      </div>
       <button class="search-btn" (click)="searchWeather()" [disabled]="loading">
-        <span *ngIf="!loading">Search</span>
+        <span *ngIf="!loading">Add City</span>
         <div class="loader" *ngIf="loading"></div>
+      </button>
+
+      <!-- Map View Button: Hidden on initial page until a city is searched/tracked -->
+      <button
+        class="map-view-btn"
+        (click)="openMap()"
+        *ngIf="savedCities.length > 0 || weatherData"
+        title="Open Interactive Map View"
+      >
+        <span>🗺️ Map View</span>
+        <span class="badge" *ngIf="savedCities.length > 0">{{ savedCities.length }}</span>
       </button>
     </div>
 
-    <div class="error-message" *ngIf="error">
-      {{ error }}
-    </div>
+    <div class="error-message" *ngIf="error">{{ error }}</div>
 
-    <div class="weather-card" *ngIf="weatherData" [class.show]="weatherData">
+    <!-- Single city card (when only 1 city searched) -->
+    <div class="weather-card" *ngIf="savedCities.length === 1 && weatherData" [class.show]="weatherData">
       <div class="weather-header">
         <h2 class="location">{{ weatherData.location }}</h2>
         <p class="date">{{ weatherData.lastUpdated | date:'medium' }}</p>
       </div>
-
       <div class="weather-main">
         <div class="condition-icon">{{ getWeatherIcon(weatherData.condition, weatherData.isDay) }}</div>
         <div class="temperature">
@@ -47,7 +116,6 @@
         </div>
         <div class="condition-text">{{ weatherData.condition }}</div>
       </div>
-
       <div class="weather-details">
         <div class="detail-item">
           <span class="detail-icon">💧</span>
@@ -65,5 +133,23 @@
         </div>
       </div>
     </div>
+
+    <!-- City Network Graph (when 2+ cities tracked) -->
+    <app-city-graph
+      *ngIf="savedCities.length >= 2"
+      [cities]="savedCities"
+      (nodeHovered)="handleNodeHover($event)"
+      (nodeClicked)="handleNodeClick($event)"
+    ></app-city-graph>
   </div>
+
+  <!-- Map View Overlay -->
+  <app-map-view
+    *ngIf="showMap"
+    [cities]="savedCities"
+    (close)="closeMap()"
+    (removeCity)="removeCityFromList($event)"
+    (addCity)="addCityFromMapEvent($event)"
+  ></app-map-view>
+
 </div>

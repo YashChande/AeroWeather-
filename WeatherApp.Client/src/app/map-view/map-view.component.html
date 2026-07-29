@@ -1,0 +1,79 @@
+<div class="map-overlay">
+  <!-- Header Bar -->
+  <div class="map-header">
+    <div class="map-title">
+      <span class="map-title-icon">🗺️</span>
+      <span>Weather <strong>World Map</strong></span>
+    </div>
+    <button class="map-close-btn" (click)="close.emit()">✕ Close Map</button>
+  </div>
+
+  <!-- Map Container -->
+  <div #mapContainer class="leaflet-map"></div>
+
+  <!-- Loading Overlay -->
+  <div class="map-loading" *ngIf="loadingMap">
+    <div class="map-loader-ring"></div>
+    <p>Plotting cities on the map...</p>
+  </div>
+
+  <!-- City Panel -->
+  <div class="city-panel" *ngIf="!loadingMap">
+    <h3 class="panel-title">📍 Tracked Places</h3>
+
+    <!-- Add Place Box -->
+    <div class="panel-add-box">
+      <div class="panel-input-wrapper">
+        <input
+          type="text"
+          class="panel-add-input"
+          placeholder="Add a place..."
+          [(ngModel)]="newCityInput"
+          (ngModelChange)="onPanelInputChange()"
+          (keyup.enter)="handleAddCity()"
+          (blur)="hidePanelSuggestions()"
+          autocomplete="off"
+        >
+        <!-- Panel Suggestions Dropdown -->
+        <ul class="panel-suggestions-list" *ngIf="showPanelSuggestions">
+          <li
+            class="panel-suggestion-item"
+            *ngFor="let s of panelSuggestions"
+            (mousedown)="selectPanelSuggestion(s)"
+          >
+            <span class="suggestion-icon">📍</span>
+            {{ s }}
+          </li>
+        </ul>
+      </div>
+      <button class="panel-add-btn" (click)="handleAddCity()">＋</button>
+    </div>
+
+    <div class="city-panel-empty" *ngIf="cityMapData.length === 0">
+      No places added yet.
+    </div>
+    <ul class="city-panel-list">
+      <li
+        class="city-panel-item"
+        *ngFor="let c of cityMapData"
+        (click)="flyToCity(c)"
+      >
+        <div class="city-panel-left">
+          <span class="city-panel-icon">{{ getWeatherIcon(c.record.condition, c.record.isDay) }}</span>
+          <div class="city-panel-info">
+            <span class="city-panel-name">{{ c.record.location }}</span>
+            <span class="city-panel-condition">{{ c.record.condition }}</span>
+          </div>
+        </div>
+        <div class="city-panel-right">
+          <span class="city-panel-temp">{{ c.record.temperature | number:'1.0-0' }}°C</span>
+          <button
+            class="city-delete-btn"
+            (click)="$event.stopPropagation(); deleteCityFromMap(c.record.location)"
+            title="Remove from map"
+          >🗑️</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

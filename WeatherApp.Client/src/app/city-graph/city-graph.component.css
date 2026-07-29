@@ -1,0 +1,131 @@
+:host {
+  display: block;
+  position: fixed;
+  top: 180px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* NOTE: Do NOT set pointer-events:none here — that would block ALL child elements from receiving events in HTML context */
+  z-index: 5;
+}
+
+.graph-outer {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: calc(100vh - 180px);
+  overflow: visible;
+  /* pointer-events must be auto/unset so mouse events can reach SVG child nodes */
+}
+
+.graph-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.graph-canvas svg {
+  width: 100%;
+  height: 100%;
+  /* SVG itself: none so background doesn't block the page, but child nodes override this */
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ── D3 Node interaction ──── */
+:global(.graph-node) {
+  pointer-events: all !important;
+  cursor: grab !important;
+}
+
+:global(.graph-node circle),
+:global(.graph-node text) {
+  pointer-events: all !important;
+  cursor: grab !important;
+}
+
+:global(.graph-node:hover circle:nth-child(2)) {
+  stroke: #e879f9 !important;
+  stroke-width: 6 !important;
+}
+
+:global(.graph-node:active),
+:global(.graph-node:active circle),
+:global(.graph-node:active text) {
+  cursor: grabbing !important;
+}
+
+/* ── Weather Card on Hover ──── */
+.graph-card {
+  position: fixed;
+  top: 100px;
+  right: 32px;
+  background: rgba(12, 8, 36, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(192, 132, 252, 0.4);
+  border-radius: 22px;
+  padding: 1.4rem 1.6rem;
+  min-width: 220px;
+  box-shadow: 0 16px 50px rgba(168, 85, 247, 0.4);
+  animation: cardPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 20;
+  pointer-events: none;
+}
+
+@keyframes cardPop {
+  from { opacity: 0; transform: scale(0.88) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.graph-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.65rem;
+}
+
+.graph-card-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.5));
+}
+
+.graph-card-city {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f3e8ff;
+  line-height: 1.2;
+}
+
+.graph-card-condition {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.graph-card-temp {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 0 20px rgba(192, 132, 252, 0.6);
+  line-height: 1;
+  margin-bottom: 0.65rem;
+}
+
+.graph-card-details {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* ── Hint ───────────────────── */
+.graph-hint {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
