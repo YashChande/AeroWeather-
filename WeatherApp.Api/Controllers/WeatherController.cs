@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WeatherApp.Api.Data;
@@ -7,6 +8,7 @@ using WeatherApp.Api.Services;
 namespace WeatherApp.Api.Controllers
 {
     [ApiController]
+    [EnableCors("AllowAll")]
     [Route("api/[controller]")]
     public class WeatherController : ControllerBase
     {

@@ -18,9 +18,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -30,11 +31,8 @@ builder.Services.AddScoped<WeatherService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// app.UseHttpsRedirection();
-
+app.UseRouting();
 app.UseCors("AllowAll");
-
 app.UseAuthorization();
 
 app.MapControllers();
