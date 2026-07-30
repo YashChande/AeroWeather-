@@ -31,6 +31,25 @@ builder.Services.AddScoped<WeatherService>();
 
 var app = builder.Build();
 
+// Handle CORS preflight OPTIONS requests manually before routing
+// This ensures Render/proxy doesn't 405 them
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("Access-Control-Allow-Origin", context.Request.Headers["Origin"].FirstOrDefault() ?? "*");
+    context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
+
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        await context.Response.CompleteAsync();
+        return;
+    }
+
+    await next();
+});
+
 app.UseRouting();
 app.UseCors("AllowAll");
 app.UseAuthorization();
