@@ -140,6 +140,35 @@
   border-color: #a855f7;
 }
 
+.graph-card {
+  position: fixed;
+  top: 100px;
+  right: 32px;
+  background: rgba(12, 8, 36, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(192, 132, 252, 0.4);
+  border-radius: 22px;
+  padding: 1.4rem 1.6rem;
+  min-width: 220px;
+  max-width: calc(100vw - 24px);
+  box-shadow: 0 16px 50px rgba(168, 85, 247, 0.4);
+  animation: cardPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 20;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .graph-card {
+    top: auto;
+    bottom: 80px;
+    right: 12px;
+    left: 12px;
+    padding: 1rem;
+    min-width: auto;
+  }
+}
+
 .panel-suggestions-list {
   position: absolute;
   top: calc(100% + 4px);
@@ -403,18 +432,34 @@
 @media (max-width: 640px) {
   .city-panel {
     top: auto;
-    bottom: 20px;
-    right: 12px;
-    left: 12px;
+    bottom: 16px;
+    right: 10px;
+    left: 10px;
     width: auto;
-    max-height: 220px;
+    max-height: 200px;
+    border-radius: 14px;
+    padding: 0.75rem;
   }
 
   .map-header {
-    padding: 0.75rem 1rem;
+    padding: 0.65rem 0.9rem;
   }
 
   .map-title {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+  }
+
+  .map-close-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.82rem;
+  }
+
+  .panel-title {
+    font-size: 0.78rem;
+  }
+
+  .panel-add-input {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.7rem;
   }
 }

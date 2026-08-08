@@ -4,6 +4,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Title } from '@angular/platform-browser';
 import { WeatherService, WeatherRecord } from './weather.service';
 import { MapViewComponent } from './map-view/map-view.component';
 import { CityGraphComponent } from './city-graph/city-graph.component';
@@ -38,6 +39,12 @@ export class AppComponent implements OnInit, AfterViewInit {
   showMap: boolean = false;
   cityAlreadySaved: boolean = false;
 
+  // Startup status state
+  isBackendReady: boolean = false;
+  isBackendError: boolean = false;
+  statusMessage: string = '⚡ Connecting to Weather Satellite Network...';
+  progressPercent: number = 0;
+
   get isInitialState(): boolean {
     return !this.weatherData && this.savedCities.length === 0;
   }
@@ -45,7 +52,12 @@ export class AppComponent implements OnInit, AfterViewInit {
   private animationFrameId: number = 0;
   private particles: Particle[] = [];
 
-  constructor(private weatherService: WeatherService, private http: HttpClient) {
+  constructor(
+    private weatherService: WeatherService,
+    private http: HttpClient,
+    private titleService: Title
+  ) {
+    this.titleService.setTitle('AeroWeather');
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -62,7 +74,61 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.titleService.setTitle('AeroWeather');
+    // Step 1 — immediately start at 5%
+    this.progressPercent = 5;
+
+    // Step 2 — fast initial progress: 5% → 35% over 1.8s
+    setTimeout(() => {
+      if (!this.isBackendReady && !this.isBackendError) {
+        this.statusMessage = '🛰️ Initializing Geocoding Engine...';
+        this.progressPercent = 35;
+      }
+    }, 1800);
+
+    // Step 3 — 35% → 65% at 4s (backend still loading)
+    setTimeout(() => {
+      if (!this.isBackendReady && !this.isBackendError) {
+        this.statusMessage = '🌐 Waking up Render Backend (Cold Start)...';
+        this.progressPercent = 65;
+      }
+    }, 4000);
+
+    // Step 4 — slowly creep from 65% → 85% over time while waiting (does NOT complete)
+    // This trickle timer runs every 3s nudging up a little so user sees activity
+    const trickleInterval = setInterval(() => {
+      if (!this.isBackendReady && !this.isBackendError && this.progressPercent < 85) {
+        this.progressPercent = Math.min(this.progressPercent + 5, 85);
+      } else {
+        clearInterval(trickleInterval);
+      }
+    }, 3000);
+
+    // True live backend health check — jumps to 100% only on real API success
+    this.http.get('https://aeroweather-aau4.onrender.com/api/weather/London', { observe: 'response' })
+      .pipe(
+        catchError(() => {
+          clearInterval(trickleInterval);
+          this.isBackendReady = false;
+          this.isBackendError = true;
+          this.progressPercent = 0;
+          this.statusMessage = '🔴 Satellite Network Offline — Backend Suspended on Render';
+          return of(null);
+        })
+      )
+      .subscribe(res => {
+        if (res && (res.status === 200 || res.ok)) {
+          clearInterval(trickleInterval);
+          this.progressPercent = 100;
+          setTimeout(() => {
+            this.isBackendReady = true;
+            this.isBackendError = false;
+          }, 300); // brief pause at 100% before showing green badge
+        }
+      });
+  }
+
 
   ngAfterViewInit() {
     this.animateTitle();
@@ -114,6 +180,20 @@ export class AppComponent implements OnInit, AfterViewInit {
       '-=0.6'
     );
 
+    // 4. Staggered entrance for orbital weather elements (1.2s -> 3.5s)
+    tl.fromTo('.orbit-icon',
+      { scale: 0, opacity: 0, rotation: -120 },
+      {
+        scale: 1,
+        opacity: 1,
+        rotation: 0,
+        duration: 0.9,
+        stagger: 0.2,
+        ease: 'back.out(2)'
+      },
+      '-=0.4'
+    );
+
     // Continuous floating bobbing for characters
     gsap.to('.title-char', {
       y: -5,
@@ -136,6 +216,12 @@ export class AppComponent implements OnInit, AfterViewInit {
       stagger: 0.3,
       delay: 1.8
     });
+
+    // Continuous orbital floating loop for 4 weather icons
+    gsap.to('.orb-1', { y: -12, x: 6, rotation: 12, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+    gsap.to('.orb-2', { y: 10, x: -8, rotation: -15, duration: 2.7, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+    gsap.to('.orb-3', { y: -14, x: -6, rotation: 20, duration: 3.6, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+    gsap.to('.orb-4', { y: 12, x: 8, rotation: -10, duration: 3.0, ease: 'sine.inOut', yoyo: true, repeat: -1 });
   }
 
   resetToHome() {

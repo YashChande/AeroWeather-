@@ -119,6 +119,104 @@
   font-size: 1.3rem;
 }
 
+/* ── Orbit Icons (Initial Landing Page 5s Intro) ── */
+.orbit-icon {
+  position: absolute;
+  font-size: 2.2rem;
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.6));
+}
+
+.orb-1 { top: -25px; right: 18%; }
+.orb-2 { top: 20%; left: -10px; font-size: 2rem; }
+.orb-3 { bottom: -20px; left: 22%; font-size: 2.4rem; }
+.orb-4 { bottom: 15%; right: -15px; font-size: 2rem; }
+
+/* ── 5-Second System Status Bar (Backend Startup Pill) ── */
+.system-status-bar {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeIn 0.6s ease;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 100px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.5s ease;
+}
+
+.status-indicator.ready {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.25);
+}
+
+.status-indicator.offline {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+.status-indicator.offline .status-pulse {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+  animation: none;
+}
+
+.status-pulse {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 10px #c084fc;
+  animation: pulseDot 1.4s ease-in-out infinite;
+}
+
+.status-indicator.ready .status-pulse {
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+  animation: none;
+}
+
+.status-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #f3e8ff;
+  letter-spacing: 0.02em;
+}
+
+.status-progress-track {
+  width: 180px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.status-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7 0%, #3b82f6 50%, #22c55e 100%);
+  border-radius: 100px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
 .app-title {
   text-align: center;
   font-size: 3.5rem;
@@ -856,3 +954,117 @@
 .theme-scorching  { background: linear-gradient(160deg, #2a1000, #3d1800, #1e0a00) !important; }
 .theme-drizzle    { background: linear-gradient(160deg, #0e1620, #182030, #0c1418) !important; }
 .theme-heavy-rain { background: linear-gradient(160deg, #080e18, #0e1624, #060c14) !important; }
+
+/* ── Mobile Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 1rem 1rem 0 1rem;
+  }
+
+  /* Header */
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+  }
+
+  .app-title {
+    font-size: 2.2rem !important;
+    letter-spacing: -1px;
+  }
+
+  /* Initial state — scale down on mobile */
+  .initial-content {
+    max-width: 100% !important;
+    padding: 0 1rem;
+  }
+  .initial-content .app-title {
+    font-size: 3.5rem !important;
+  }
+  .initial-content .title-aura {
+    width: 280px !important;
+    height: 120px !important;
+  }
+
+  /* Search bar */
+  .search-container {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .search-btn {
+    width: 100%;
+    padding: 0.9rem 1rem !important;
+    border-radius: 14px !important;
+    font-size: 1rem !important;
+    min-width: unset !important;
+  }
+  .search-input {
+    padding: 0.9rem 1.2rem !important;
+    font-size: 1rem !important;
+    border-radius: 14px !important;
+  }
+  .initial-content .search-input {
+    padding: 1rem 1.2rem !important;
+  }
+  .initial-content .search-btn {
+    padding: 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  /* Weather card */
+  .weather-card {
+    padding: 1.5rem 1.2rem;
+    border-radius: 20px;
+  }
+  .temperature {
+    font-size: 4rem !important;
+  }
+  .condition-icon {
+    font-size: 4rem !important;
+  }
+
+  /* Action buttons */
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Map view button */
+  .map-view-btn {
+    padding: 0.85rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Error / info message */
+  .error-message {
+    font-size: 0.85rem;
+    padding: 0.7rem 1rem;
+  }
+
+  /* Content wrapper */
+  .content-wrapper {
+    max-width: 100%;
+    gap: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-title {
+    font-size: 1.9rem !important;
+  }
+  .initial-content .app-title {
+    font-size: 2.8rem !important;
+  }
+  .initial-content .title-aura {
+    width: 220px !important;
+    height: 90px !important;
+  }
+  .temperature {
+    font-size: 3.5rem !important;
+    letter-spacing: -2px;
+  }
+  .weather-card {
+    padding: 1.2rem 1rem;
+  }
+}

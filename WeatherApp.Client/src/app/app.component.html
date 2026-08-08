@@ -54,6 +54,11 @@
       <div class="title-aura"></div>
       <div class="title-sparkle sparkle-1">✨</div>
       <div class="title-sparkle sparkle-2">🌤️</div>
+      <!-- Floating orbital weather elements for 5s intro -->
+      <div class="orbit-icon orb-1">🌤️</div>
+      <div class="orbit-icon orb-2">⚡</div>
+      <div class="orbit-icon orb-3">❄️</div>
+      <div class="orbit-icon orb-4">🌧️</div>
       <h1 class="app-title clickable" #titleRef (click)="resetToHome()" title="Click to return Home">
         <span class="aero-text">Aero</span><span class="highlight">Weather</span>
       </h1>
@@ -89,6 +94,16 @@
         <div class="loader" *ngIf="loading"></div>
       </button>
 
+      <!-- System Status Bar (True Live Backend Health & Warmup Indicator) -->
+      <div class="system-status-bar" *ngIf="isInitialState">
+        <div class="status-indicator" [class.ready]="isBackendReady" [class.offline]="isBackendError">
+          <span class="status-pulse"></span>
+          <span class="status-text">{{ isBackendReady ? '🟢 Satellite Network Ready — Search Any Location' : statusMessage }}</span>
+        </div>
+        <div class="status-progress-track" *ngIf="!isBackendReady && !isBackendError">
+          <div class="status-progress-bar" [style.width.%]="progressPercent"></div>
+        </div>
+      </div>
       <!-- Map View Button: Hidden on initial page until a city is searched/tracked -->
       <button
         class="map-view-btn"
