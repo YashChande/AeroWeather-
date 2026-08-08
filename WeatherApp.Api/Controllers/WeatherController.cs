@@ -21,6 +21,12 @@ namespace WeatherApp.Api.Controllers
             _weatherService = weatherService;
         }
 
+        [HttpGet("ping")]
+        public IActionResult Ping()
+        {
+            return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+        }
+
         [HttpGet("{location}")]
         public async Task<IActionResult> GetWeather(string location)
         {

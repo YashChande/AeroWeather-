@@ -106,7 +106,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }, 3000);
 
     // True live backend health check — jumps to 100% only on real API success
-    this.http.get('https://aeroweather-aau4.onrender.com/api/weather/London', { observe: 'response' })
+    this.http.get('https://aeroweather-aau4.onrender.com/api/weather/ping', { observe: 'response' })
       .pipe(
         catchError(() => {
           clearInterval(trickleInterval);
