@@ -21,7 +21,7 @@ namespace WeatherApp.Api.Controllers
             _weatherService = weatherService;
         }
 
-        [HttpGet("ping")]
+        [HttpGet("ping", Order = -1)]
         public IActionResult Ping()
         {
             return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
