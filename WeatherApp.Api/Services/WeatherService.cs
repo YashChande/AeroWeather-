@@ -12,17 +12,45 @@ namespace WeatherApp.Api.Services
             _httpClient = httpClient;
             if (!_httpClient.DefaultRequestHeaders.Contains("User-Agent"))
             {
-                _httpClient.DefaultRequestHeaders.Add("User-Agent", "AeroWeatherApp/1.0");
+                _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+            }
+            if (!_httpClient.DefaultRequestHeaders.Contains("Accept"))
+            {
+                _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+            }
+        }
+
+        public async Task<object> GetDiagnosticInfoAsync(string location)
+        {
+            try
+            {
+                var geocodeUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(location)}&count=1";
+                var geocodeResponse = await _httpClient.GetAsync(geocodeUrl);
+                var geocodeContent = await geocodeResponse.Content.ReadAsStringAsync();
+
+                return new
+                {
+                    location,
+                    geocodeUrl,
+                    geocodeStatusCode = (int)geocodeResponse.StatusCode,
+                    geocodeContent
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { error = ex.Message, stack = ex.StackTrace };
             }
         }
 
         public async Task<WeatherRecord?> FetchWeatherAsync(string location)
         {
-            // 1. Geocode
-            var geocodeUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(location)}&count=1";
-            var geocodeResponse = await _httpClient.GetAsync(geocodeUrl);
-            
-            if (!geocodeResponse.IsSuccessStatusCode) return null;
+            try
+            {
+                // 1. Geocode
+                var geocodeUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(location)}&count=1";
+                var geocodeResponse = await _httpClient.GetAsync(geocodeUrl);
+                
+                if (!geocodeResponse.IsSuccessStatusCode) return null;
 
             var geocodeContent = await geocodeResponse.Content.ReadAsStringAsync();
             using var geocodeJson = JsonDocument.Parse(geocodeContent);
@@ -64,6 +92,12 @@ namespace WeatherApp.Api.Services
                 LastUpdated = DateTime.UtcNow
             };
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WeatherService Error] {ex.Message}");
+            return null;
+        }
+    }
 
         private string GetConditionFromCode(int code)
         {

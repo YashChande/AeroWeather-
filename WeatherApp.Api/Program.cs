@@ -55,6 +55,7 @@ app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/", () => Results.Redirect("https://yashchande.github.io/AeroWeather-/", permanent: false));
 
 // Apply migrations on startup (for demonstration purposes)
 using (var scope = app.Services.CreateScope())

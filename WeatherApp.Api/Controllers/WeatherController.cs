@@ -27,6 +27,13 @@ namespace WeatherApp.Api.Controllers
             return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
         }
 
+        [HttpGet("diag/{location}", Order = -1)]
+        public async Task<IActionResult> Diag(string location)
+        {
+            var diag = await _weatherService.GetDiagnosticInfoAsync(location);
+            return Ok(diag);
+        }
+
         [HttpGet("{location}")]
         public async Task<IActionResult> GetWeather(string location)
         {
