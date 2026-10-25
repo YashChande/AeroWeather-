@@ -268,6 +268,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   selectSuggestion(suggestion: string) {
+    // Suggestion format is "City, Region, Country" — keep full string visible
+    // but send only the city name to the API to avoid geocoding failures
     this.searchQuery = suggestion;
     this.showSuggestions = false;
     this.suggestions = [];
@@ -288,8 +290,11 @@ export class AppComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    // Strip region/country from autocomplete suggestion format "City, Region, Country"
+    const cityOnly = rawQuery.split(',')[0].trim();
+
     // 2. Pre-check if place is already in tracked cities list (exact match)
-    const queryLower = rawQuery.toLowerCase();
+    const queryLower = cityOnly.toLowerCase();
     const existing = this.savedCities.find(
       c => c.location.toLowerCase() === queryLower
     );
@@ -303,7 +308,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.error = null;
     this.weatherData = null;
 
-    this.weatherService.getWeather(rawQuery).pipe(
+    this.weatherService.getWeather(cityOnly).pipe(
       catchError(() => {
         this.error = 'Could not fetch weather data. Please check the location and try again.';
         this.loading = false;

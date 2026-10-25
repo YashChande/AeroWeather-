@@ -24,16 +24,36 @@ namespace WeatherApp.Api.Services
         {
             try
             {
-                var geocodeUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(location)}&count=1";
+                var cityName = location.Split(',')[0].Trim();
+                var geocodeUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(cityName)}&count=1";
                 var geocodeResponse = await _httpClient.GetAsync(geocodeUrl);
                 var geocodeContent = await geocodeResponse.Content.ReadAsStringAsync();
+
+                string weatherContent = "";
+                int weatherStatus = 0;
+                if (geocodeResponse.IsSuccessStatusCode)
+                {
+                    using var geocodeJson = JsonDocument.Parse(geocodeContent);
+                    if (geocodeJson.RootElement.TryGetProperty("results", out var results) && results.GetArrayLength() > 0)
+                    {
+                        var lat = results[0].GetProperty("latitude").GetDouble();
+                        var lon = results[0].GetProperty("longitude").GetDouble();
+                        var weatherUrl = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,is_day";
+                        var weatherResponse = await _httpClient.GetAsync(weatherUrl);
+                        weatherStatus = (int)weatherResponse.StatusCode;
+                        weatherContent = await weatherResponse.Content.ReadAsStringAsync();
+                    }
+                }
 
                 return new
                 {
                     location,
+                    cityName,
                     geocodeUrl,
                     geocodeStatusCode = (int)geocodeResponse.StatusCode,
-                    geocodeContent
+                    geocodeContent,
+                    weatherStatusCode = weatherStatus,
+                    weatherContent
                 };
             }
             catch (Exception ex)
@@ -46,58 +66,76 @@ namespace WeatherApp.Api.Services
         {
             try
             {
+                // Strip region/country qualifiers from autocomplete suggestions
+                // e.g. "Mumbai, Maharashtra, India" → "Mumbai"
+                var cityName = location.Split(',')[0].Trim();
+
                 // 1. Geocode
-                var geocodeUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(location)}&count=1";
+                var geocodeUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(cityName)}&count=1";
                 var geocodeResponse = await _httpClient.GetAsync(geocodeUrl);
-                
-                if (!geocodeResponse.IsSuccessStatusCode) return null;
 
-            var geocodeContent = await geocodeResponse.Content.ReadAsStringAsync();
-            using var geocodeJson = JsonDocument.Parse(geocodeContent);
-            
-            if (!geocodeJson.RootElement.TryGetProperty("results", out var results) || results.GetArrayLength() == 0)
-                return null;
+                if (!geocodeResponse.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[WeatherService] Geocode failed: {geocodeResponse.StatusCode} for '{cityName}'");
+                    return null;
+                }
 
-            var firstResult = results[0];
-            var lat = firstResult.GetProperty("latitude").GetDouble();
-            var lon = firstResult.GetProperty("longitude").GetDouble();
-            var resolvedName = firstResult.GetProperty("name").GetString() ?? location;
+                var geocodeContent = await geocodeResponse.Content.ReadAsStringAsync();
+                using var geocodeJson = JsonDocument.Parse(geocodeContent);
 
-            // 2. Fetch Weather
-            var weatherUrl = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,is_day";
-            var weatherResponse = await _httpClient.GetAsync(weatherUrl);
+                if (!geocodeJson.RootElement.TryGetProperty("results", out var results) || results.GetArrayLength() == 0)
+                {
+                    Console.WriteLine($"[WeatherService] No geocode results for '{cityName}'");
+                    return null;
+                }
 
-            if (!weatherResponse.IsSuccessStatusCode) return null;
+                var firstResult = results[0];
+                var lat = firstResult.GetProperty("latitude").GetDouble();
+                var lon = firstResult.GetProperty("longitude").GetDouble();
+                var resolvedName = firstResult.GetProperty("name").GetString() ?? cityName;
 
-            var weatherContent = await weatherResponse.Content.ReadAsStringAsync();
-            using var weatherJson = JsonDocument.Parse(weatherContent);
+                Console.WriteLine($"[WeatherService] Geocoded '{cityName}' to {resolvedName} ({lat},{lon})");
 
-            var current = weatherJson.RootElement.GetProperty("current");
-            var temperature = current.GetProperty("temperature_2m").GetDouble();
-            var humidity = current.GetProperty("relative_humidity_2m").GetDouble();
-            var windSpeed = current.GetProperty("wind_speed_10m").GetDouble();
-            var weatherCode = current.GetProperty("weather_code").GetInt32();
-            var isDay = current.GetProperty("is_day").GetInt32() == 1;
+                // 2. Fetch Weather
+                var weatherUrl = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,is_day";
+                var weatherResponse = await _httpClient.GetAsync(weatherUrl);
 
-            var condition = GetConditionFromCode(weatherCode);
+                if (!weatherResponse.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[WeatherService] Weather fetch failed: {weatherResponse.StatusCode}");
+                    return null;
+                }
 
-            return new WeatherRecord
+                var weatherContent = await weatherResponse.Content.ReadAsStringAsync();
+                using var weatherJson = JsonDocument.Parse(weatherContent);
+
+                var current = weatherJson.RootElement.GetProperty("current");
+                var temperature = current.GetProperty("temperature_2m").GetDouble();
+                var humidity = current.GetProperty("relative_humidity_2m").GetDouble();
+                var windSpeed = current.GetProperty("wind_speed_10m").GetDouble();
+                var weatherCode = current.GetProperty("weather_code").GetInt32();
+                var isDay = current.GetProperty("is_day").GetInt32() == 1;
+                var condition = GetConditionFromCode(weatherCode);
+
+                Console.WriteLine($"[WeatherService] Success: {resolvedName} {temperature}°C {condition}");
+
+                return new WeatherRecord
+                {
+                    Location = resolvedName,
+                    Temperature = temperature,
+                    Humidity = humidity,
+                    WindSpeed = windSpeed,
+                    Condition = condition,
+                    IsDay = isDay,
+                    LastUpdated = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex)
             {
-                Location = resolvedName,
-                Temperature = temperature,
-                Humidity = humidity,
-                WindSpeed = windSpeed,
-                Condition = condition,
-                IsDay = isDay,
-                LastUpdated = DateTime.UtcNow
-            };
+                Console.WriteLine($"[WeatherService Error] {ex.GetType().Name}: {ex.Message}");
+                return null;
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[WeatherService Error] {ex.Message}");
-            return null;
-        }
-    }
 
         private string GetConditionFromCode(int code)
         {
