@@ -34,6 +34,36 @@ namespace WeatherApp.Api.Controllers
             return Ok(diag);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SaveWeather([FromBody] WeatherRecord record)
+        {
+            if (record == null || string.IsNullOrWhiteSpace(record.Location))
+            {
+                return BadRequest("Invalid weather record");
+            }
+
+            var cachedWeather = await _dbContext.WeatherRecords
+                .FirstOrDefaultAsync(w => w.Location.ToLower() == record.Location.ToLower());
+
+            if (cachedWeather != null)
+            {
+                cachedWeather.Temperature = record.Temperature;
+                cachedWeather.Humidity = record.Humidity;
+                cachedWeather.WindSpeed = record.WindSpeed;
+                cachedWeather.Condition = record.Condition;
+                cachedWeather.IsDay = record.IsDay;
+                cachedWeather.LastUpdated = DateTime.UtcNow;
+            }
+            else
+            {
+                record.LastUpdated = DateTime.UtcNow;
+                _dbContext.WeatherRecords.Add(record);
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return Ok(cachedWeather ?? record);
+        }
+
         [HttpGet("{location}")]
         public async Task<IActionResult> GetWeather(string location)
         {
